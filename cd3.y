@@ -1,62 +1,49 @@
 %{
 #include <stdio.h>
-#include <stdlib.h>
 %}
 
-%token IF ELSE WHILE FOR ID NUM REL_OP
+%token Det Noun Verb Pronoun CONJ Preposition
+%nonassoc Noun
+%nonassoc Preposition
+%nonassoc CONJ
 
 %%
-
-program:
-    stmt_list
+S1 : S1 S
+    | S
     ;
 
-stmt_list:
-    stmt
-    | stmt_list stmt
+S : SS { printf("simple sentence\n"); }
+    | CS '.' { printf("Compound sentence\n"); }
     ;
 
-stmt:
-    if_stmt
-    | while_stmt
-    | for_stmt
-    | expr_stmt
+CS : SS CONJ SS { printf("cs\n"); }
+    | CS CONJ SS
     ;
 
-if_stmt:
-    IF '(' expr ')' stmt
-    | IF '(' expr ')' stmt ELSE stmt
+SS : NP VP { printf("ss\n"); }
+    | VP { printf("1\n"); }
     ;
 
-while_stmt:
-    WHILE '(' expr ')' stmt
+NP : Det Noun { printf("2\n"); }
+    | Noun { printf("3\n"); }
+    | Pronoun { printf("4\n"); }
+    | Det Noun PP { printf("5\n"); }
     ;
 
-for_stmt:
-    FOR '(' expr_stmt expr_stmt expr ')' stmt
+VP : Verb NP { printf("6\n"); }
+    | Verb { printf("7\n"); }
+    | VP PP { printf("8\n"); }
     ;
 
-expr_stmt:
-    expr ';'
-    ;
-
-expr:
-    ID '=' expr
-    | ID REL_OP NUM
-    | ID
-    | NUM
+PP : Preposition NP { printf("9\n"); }
     ;
 
 %%
-
-int main() {
-    printf("Enter control statements (Ctrl+D to stop):\n");
+void main() {
     yyparse();
-    printf("Syntax correct.\n");
-    return 0;
 }
 
-void yyerror(const char *s) {
-    fprintf(stderr, "Syntax error: %s\n", s);
-    exit(1);
+int yyerror(char *msg) {
+    printf("%s\n", msg);
+    return 1;
 }
