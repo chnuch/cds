@@ -1,27 +1,49 @@
 %{
-#include "y.tab.h"
+#include <stdio.h>
 %}
 
-%%
-
-"if"        { return IF; }
-"else"      { return ELSE; }
-"while"     { return WHILE; }
-"for"       { return FOR; }
-"("         { return '('; }
-")"         { return ')'; }
-"{"         { return '{'; }
-"}"         { return '}'; }
-";"         { return ';'; }
-"<" | ">" | "==" | "!=" | "<=" | ">=" { return REL_OP; }
-"="         { return '='; }
-[a-zA-Z_][a-zA-Z0-9_]*   { return ID; }
-[0-9]+      { return NUM; }
-[ \t\n]+    ; // ignore whitespace
-
-.           { printf("Invalid character: %s\n", yytext); }
+%token Det Noun Verb Pronoun CONJ Preposition
+%nonassoc Noun
+%nonassoc Preposition
+%nonassoc CONJ
 
 %%
-int yywrap() {
+S1 : S1 S
+    | S
+    ;
+
+S : SS { printf("simple sentence\n"); }
+    | CS '.' { printf("Compound sentence\n"); }
+    ;
+
+CS : SS CONJ SS { printf("cs\n"); }
+    | CS CONJ SS
+    ;
+
+SS : NP VP { printf("ss\n"); }
+    | VP { printf("1\n"); }
+    ;
+
+NP : Det Noun { printf("2\n"); }
+    | Noun { printf("3\n"); }
+    | Pronoun { printf("4\n"); }
+    | Det Noun PP { printf("5\n"); }
+    ;
+
+VP : Verb NP { printf("6\n"); }
+    | Verb { printf("7\n"); }
+    | VP PP { printf("8\n"); }
+    ;
+
+PP : Preposition NP { printf("9\n"); }
+    ;
+
+%%
+void main() {
+    yyparse();
+}
+
+int yyerror(char *msg) {
+    printf("%s\n", msg);
     return 1;
 }
