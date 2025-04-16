@@ -1,27 +1,39 @@
 %{
-#include "y.tab.h"
+#include <stdio.h>
+#include "control.tab.h"
+extern int yylex(void);
 %}
 
-%%
-
-"if"        { return IF; }
-"else"      { return ELSE; }
-"while"     { return WHILE; }
-"for"       { return FOR; }
-"("         { return '('; }
-")"         { return ')'; }
-"{"         { return '{'; }
-"}"         { return '}'; }
-";"         { return ';'; }
-"<" | ">" | "==" | "!=" | "<=" | ">=" { return REL_OP; }
-"="         { return '='; }
-[a-zA-Z_][a-zA-Z0-9_]*   { return ID; }
-[0-9]+      { return NUM; }
-[ \t\n]+    ; // ignore whitespace
-
-.           { printf("Invalid character: %s\n", yytext); }
+L [A-Za-z]
+D [0-9]
+id {L}({L}|{D})*
 
 %%
+
+"if"       { return IF; }
+"else"     { return ELSE; }
+"for"      { return FOR; }
+"do"       { return DO; }
+"while"    { return WHILE; }
+"++"       { return INC; }
+"--"       { return DEC; }
+"||"       { return OR; }
+"&&"       { return AND; }
+"!"        { return NOT; }
+"switch"   { return SWITCH; }
+"case"     { return CASE; }
+"break"    { return BREAK; }
+"default"  { return DEFAULT; }
+
+[0-9]+(\.[0-9]+)? { return NUM; }
+{id}              { return id; }
+"<" | "<=" | ">" | ">=" | "==" | "!=" { return relop; }
+[-/;=+*,(){}:]     { return yytext[0]; }
+[ ]               { /* skip space */ }
+\n                { /* skip newline */ }
+
+%%
+
 int yywrap() {
     return 1;
 }
