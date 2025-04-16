@@ -1,49 +1,19 @@
 %{
 #include <stdio.h>
+#include "parser.tab.h"
 %}
 
-%token Det Noun Verb Pronoun CONJ Preposition
-%nonassoc Noun
-%nonassoc Preposition
-%nonassoc CONJ
+%%
+"the"|"a"|"an"                { return Det; }
+"birds"|"dog"|"kettle"|"TV"|"hamburgers"|"Lois"|"pizza"|"table"|"book" { return Noun; }
+"live"|"barks"|"sleeps"|"sings"|"open"|"saw"|"paint" { return Verb; }
+"to"|"from"|"behind"|"above"|"below"|"between"|"in"|"out" { return Preposition; }
+"she"|"he"|"they"|"we"|"I"|"you" { return Pronoun; }
+"and"|"or" { return CONJ; }
+[ \t\n] ; // Ignore whitespace
+. { return yytext[0]; }
 
 %%
-S1 : S1 S
-    | S
-    ;
-
-S : SS { printf("simple sentence\n"); }
-    | CS '.' { printf("Compound sentence\n"); }
-    ;
-
-CS : SS CONJ SS { printf("cs\n"); }
-    | CS CONJ SS
-    ;
-
-SS : NP VP { printf("ss\n"); }
-    | VP { printf("1\n"); }
-    ;
-
-NP : Det Noun { printf("2\n"); }
-    | Noun { printf("3\n"); }
-    | Pronoun { printf("4\n"); }
-    | Det Noun PP { printf("5\n"); }
-    ;
-
-VP : Verb NP { printf("6\n"); }
-    | Verb { printf("7\n"); }
-    | VP PP { printf("8\n"); }
-    ;
-
-PP : Preposition NP { printf("9\n"); }
-    ;
-
-%%
-void main() {
-    yyparse();
-}
-
-int yyerror(char *msg) {
-    printf("%s\n", msg);
+int yywrap() {
     return 1;
 }
