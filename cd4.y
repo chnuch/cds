@@ -1,62 +1,108 @@
 %{
 #include <stdio.h>
-#include <stdlib.h>
 %}
 
-%token IF ELSE WHILE FOR ID NUM REL_OP
+%token id NUM OR AND NOT relop TRUE FALSE INC DEC IF ELSE DO WHILE uminu s FOR SWITCH CASE BREAK DEFAULT
+
+%right '='
+%left '+' '-'
+%left '*' '/'
+%right '^'
+%nonassoc uminus
+%left OR
+%left AND
+%nonassoc NOT
 
 %%
 
-program:
-    stmt_list
+S1:
+      S1 S
+    | S
     ;
 
-stmt_list:
-    stmt
-    | stmt_list stmt
+S:
+      AS ';'              { printf("Assignment statement accepted\n"); }
+    | IFS                 { printf("If statement is accepted\n"); }
+    | IFES                { printf("If else statement is accepted\n"); }
+    | WS                  { printf("While statement is accepted\n"); }
+    | DWS                 { printf("Do while statement is accepted\n"); }
+    | FORS                { printf("For statement is accepted\n"); }
+    | SS                  { printf("Switch statement is accepted\n"); }
     ;
 
-stmt:
-    if_stmt
-    | while_stmt
-    | for_stmt
-    | expr_stmt
+SS:
+      SWITCH '(' E ')' '{' CV '}'
     ;
 
-if_stmt:
-    IF '(' expr ')' stmt
-    | IF '(' expr ')' stmt ELSE stmt
+CV:
+      CASE E ':' S1 BREAK ';'
+    | CASE E ':' S1 BREAK ';' CV
+    | CASE E ':' S1 BREAK ';' DEFAULT ':' S1
     ;
 
-while_stmt:
-    WHILE '(' expr ')' stmt
+AS:
+      id '=' E
     ;
 
-for_stmt:
-    FOR '(' expr_stmt expr_stmt expr ')' stmt
-    ;
-
-expr_stmt:
-    expr ';'
-    ;
-
-expr:
-    ID '=' expr
-    | ID REL_OP NUM
-    | ID
+E:
+      E '+' E
+    | E '-' E
+    | E '*' E
+    | E '/' E
+    | E '^' E
+    | '-' E     %prec uminus
+    | id
     | NUM
     ;
 
+IFS:
+      IF '(' BE ')' '{' S1 '}'
+    ;
+
+BE:
+      BE OR BE
+    | BE AND BE
+    | NOT BE
+    | id relop id
+    | TRUE
+    | FALSE
+    ;
+
+IFES:
+      IF '(' BE ')' '{' S1 '}' ELSE '{' S1 '}'
+    ;
+
+WS:
+      WHILE '(' BE ')' '{' S1 '}'
+    ;
+
+DWS:
+      DO '{' S1 '}' WHILE '(' BE ')' ';'
+    ;
+
+FORS:
+      FOR '(' IS ';' BE ';' MS ')' '{' S1 '}'
+    ;
+
+IS:
+      AS
+    | IS ',' AS
+    ;
+
+MS:
+      IS
+    | id INC
+    | INC id
+    | id DEC
+    | DEC id
+    ;
+
 %%
 
-int main() {
-    printf("Enter control statements (Ctrl+D to stop):\n");
+void main() {
     yyparse();
-    printf("Syntax correct.\n");
-    return 0;
 }
 
-void yyerror(const char *s) {
-    fprintf(stderr, "Syntax error: %s\n", s);
-    exit(1);
+int yyerror(char *msg) {
+    printf("%s\n", msg);
 }
